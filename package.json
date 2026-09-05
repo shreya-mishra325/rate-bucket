@@ -1,6 +1,6 @@
 {
   "name": "rate-bucket",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A small, dependency-free token-bucket rate limiter for Node.js, with an optional Express middleware and pluggable stores (in-memory by default, Redis-backed for multi-instance apps).",
   "type": "module",
   "main": "./dist/index.cjs",
