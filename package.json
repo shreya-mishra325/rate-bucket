@@ -1,0 +1,77 @@
+{
+  "name": "rate-bucket",
+  "version": "0.1.0",
+  "description": "A small, dependency-free token-bucket rate limiter for Node.js, with an optional Express middleware and pluggable stores (in-memory by default, Redis-backed for multi-instance apps).",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./express": {
+      "types": "./dist/adapters/express.d.ts",
+      "import": "./dist/adapters/express.js",
+      "require": "./dist/adapters/express.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "rate-limiter",
+    "rate-limiting",
+    "token-bucket",
+    "throttle",
+    "throttling",
+    "express",
+    "express-middleware",
+    "redis",
+    "api-rate-limit"
+  ],
+  "author": "Shreya Mishra",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shreya-mishra325/rate-bucket.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shreya-mishra325/rate-bucket/issues"
+  },
+  "homepage": "https://github.com/shreya-mishra325/rate-bucket#readme",
+  "engines": {
+    "node": ">=18"
+  },
+  "peerDependencies": {
+    "express": ">=4",
+    "redis": ">=4"
+  },
+  "peerDependenciesMeta": {
+    "express": {
+      "optional": true
+    },
+    "redis": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.6",
+    "@types/node": "^20.14.0",
+    "express": "^5.2.1",
+    "redis": "^6.1.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0"
+  }
+}
