@@ -26,8 +26,8 @@ npm install @shreya-mishra325/rate-bucket
 import { RateLimiter } from "@shreya-mishra325/rate-bucket";
 
 const limiter = new RateLimiter({
-  maxTokens: 20,          // bucket capacity
-  refillRatePerSecond: 1, // tokens added per second
+  maxTokens: 20,          
+  refillRatePerSecond: 1,
 });
 
 const result = await limiter.consume(userId);
@@ -49,7 +49,7 @@ app.use(
   rateLimiter({
     maxTokens: 20,
     refillRatePerSecond: 1,
-    keyGenerator: (req) => req.ip, // default
+    keyGenerator: (req) => req.ip, 
   }),
 );
 ```
@@ -89,8 +89,8 @@ Implement the `Store` interface to persist bucket state anywhere:
 import type { Store, BucketState } from "@shreya-mishra325/rate-bucket";
 
 class MyStore implements Store {
-  async get(key: string): Promise<BucketState | undefined> { /* ... */ }
-  async set(key: string, state: BucketState, ttlSeconds: number): Promise<void> { /* ... */ }
+  async get(key: string): Promise<BucketState | undefined> { }
+  async set(key: string, state: BucketState, ttlSeconds: number): Promise<void> { }
 }
 ```
 
@@ -109,7 +109,7 @@ class MyStore implements Store {
 
 Returns `{ allowed, remaining, limit }`.
 
-## Why token bucket?
+## Why token bucket
 
 Unlike a fixed window counter, a token bucket allows short bursts up to its
 capacity while enforcing a steady average rate over time — closer to how
@@ -118,3 +118,8 @@ most real APIs want to behave.
 ## License
 
 MIT
+
+---
+ 
+[GitHub](https://github.com/shreya-mishra325/rate-bucket)
+[npm](https://www.npmjs.com/package/@shreya-mishra325/rate-bucket)
