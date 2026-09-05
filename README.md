@@ -1,5 +1,9 @@
 # rate-bucket
 
+[![npm version](https://img.shields.io/npm/v/@shreya-mishra325/rate-bucket.svg)](https://www.npmjs.com/package/@shreya-mishra325/rate-bucket)
+
+Published as `@shreya-mishra325/rate-bucket` on npm.
+
 A small, dependency-free token-bucket rate limiter for Node.js and TypeScript.
 Zero-config in-memory store by default, with an optional Redis-backed store
 for multi-instance deployments, and an optional Express middleware.
@@ -8,22 +12,22 @@ for multi-instance deployments, and an optional Express middleware.
 - Works with any key: IP address, user ID, API key, etc.
 - Pluggable storage (`MemoryStore` built in, `RedisStore` for shared state)
 - Ships ESM + CJS + TypeScript types
-- Express middleware available at `rate-bucket/express` (doesn't pull in Express for non-Express users)
+- Express middleware available at `@shreya-mishra325/rate-bucket/express` (doesn't pull in Express for non-Express users)
 
 ## Install
 
 ```bash
-npm install rate-bucket
+npm install @shreya-mishra325/rate-bucket
 ```
 
 ## Quick start (framework-agnostic)
 
 ```ts
-import { RateLimiter } from "rate-bucket";
+import { RateLimiter } from "@shreya-mishra325/rate-bucket";
 
 const limiter = new RateLimiter({
-  maxTokens: 20,         
-  refillRatePerSecond: 1, 
+  maxTokens: 20,          // bucket capacity
+  refillRatePerSecond: 1, // tokens added per second
 });
 
 const result = await limiter.consume(userId);
@@ -37,7 +41,7 @@ console.log(`${result.remaining}/${result.limit} tokens left`);
 
 ```ts
 import express from "express";
-import { rateLimiter } from "rate-bucket/express";
+import { rateLimiter } from "@shreya-mishra325/rate-bucket/express";
 
 const app = express();
 
@@ -45,7 +49,7 @@ app.use(
   rateLimiter({
     maxTokens: 20,
     refillRatePerSecond: 1,
-    keyGenerator: (req) => req.ip, 
+    keyGenerator: (req) => req.ip, // default
   }),
 );
 ```
@@ -61,7 +65,7 @@ than one. To share state, bring your own connected `redis` client:
 
 ```ts
 import { createClient } from "redis";
-import { RateLimiter, RedisStore } from "rate-bucket";
+import { RateLimiter, RedisStore } from "@shreya-mishra325/rate-bucket";
 
 const client = createClient({ url: process.env.REDIS_URL });
 await client.connect();
@@ -73,7 +77,7 @@ const limiter = new RateLimiter({
 });
 ```
 
-`rate-bucket` does not depend on the `redis` package directly — you install
+`@shreya-mishra325/rate-bucket` does not depend on the `redis` package directly — you install
 and configure the client yourself, and pass it in. Any client exposing
 `hGetAll` / `hSet` / `expire` (the `node-redis` v4+ API) will work.
 
@@ -82,7 +86,7 @@ and configure the client yourself, and pass it in. Any client exposing
 Implement the `Store` interface to persist bucket state anywhere:
 
 ```ts
-import type { Store, BucketState } from "rate-bucket";
+import type { Store, BucketState } from "@shreya-mishra325/rate-bucket";
 
 class MyStore implements Store {
   async get(key: string): Promise<BucketState | undefined> { /* ... */ }
