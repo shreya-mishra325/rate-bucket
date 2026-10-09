@@ -1,10 +1,11 @@
 import type { NextFunction, Request, Response } from "express";
-import { RateLimiter, type RateLimiterOptions } from "../RateLimiter.js";
+import { RateLimiter, type RateLimiterOptions, type ConsumeResult } from "../RateLimiter.js";
 
 export interface ExpressRateLimiterOptions extends RateLimiterOptions {
-  keyGenerator?: (req: Request) => string;
-  onLimited?: (req: Request, res: Response, result: { limit: number; remaining: number }) => void;
-  cost?: number;
+  keyGenerator?: (req: Request) => string | Promise<string>;
+  onLimited?: (req: Request, res: Response, result: ConsumeResult) => void | Promise<void>;
+  cost?: number | ((req: Request) => number | Promise<number>);
+  skip?: (req: Request) => boolean | Promise<boolean>;
 }
 
 /**
@@ -12,7 +13,7 @@ export interface ExpressRateLimiterOptions extends RateLimiterOptions {
  *
  * @example
  * import express from "express";
- * import { rateLimiter } from "rate-bucket/express";
+ * import { rateLimiter } from "@shreya-mishra325/rate-bucket/express";
  *
  * app.use(rateLimiter({ maxTokens: 20, refillRatePerSecond: 1 }));
  */
@@ -22,22 +23,36 @@ export function rateLimiter(options: ExpressRateLimiterOptions = {}) {
   const cost = options.cost ?? 1;
 
   return async function rateLimiterMiddleware(req: Request, res: Response, next: NextFunction) {
-    const key = keyGenerator(req);
-    const result = await limiter.consume(key, cost);
-
-    res.setHeader("X-RateLimit-Limit", String(result.limit));
-    res.setHeader("X-RateLimit-Remaining", String(result.remaining));
-
-    if (!result.allowed) {
-      if (options.onLimited) {
-        return options.onLimited(req, res, result);
+    try {
+      if (await options.skip?.(req)) {
+        next();
+        return;
       }
-      return res.status(429).json({
-        success: false,
-        message: "Too Many Requests",
-      });
-    }
+      const key = await keyGenerator(req);
+      const requestCost = typeof cost === "function" ? await cost(req) : cost;
+      const result = await limiter.consume(key, requestCost);
 
-    next();
+      res.setHeader("X-RateLimit-Limit", String(result.limit));
+      res.setHeader("X-RateLimit-Remaining", String(result.remaining));
+
+      if (!result.allowed) {
+        if (result.retryAfterMs !== null) {
+          const retryAfterSeconds = Math.max(1, Math.ceil(result.retryAfterMs / 1000));
+          res.setHeader("Retry-After", String(retryAfterSeconds));
+        }
+        if (options.onLimited) {
+          await options.onLimited(req, res, result);
+          return;
+        }
+        return res.status(429).json({
+          success: false,
+          message: "Too Many Requests",
+        });
+      }
+
+      next();
+    } catch (error) {
+      next(error);
+    }
   };
 }

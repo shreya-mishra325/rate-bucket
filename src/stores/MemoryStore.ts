@@ -1,4 +1,5 @@
 import type { BucketState, Store } from "./Store.js";
+import { createBucketState, tryConsume, type BucketResult, type ConsumeOptions } from "../core/tokenBucket.js";
 
 interface Entry {
   state: BucketState;
@@ -19,18 +20,32 @@ export class MemoryStore implements Store {
   }
 
   async get(key: string): Promise<BucketState | undefined> {
+    return this.read(key);
+  }
+
+  private read(key: string): BucketState | undefined {
     const entry = this.data.get(key);
     if (!entry) return undefined;
     if (entry.expiresAt <= Date.now()) {
       this.data.delete(key);
       return undefined;
     }
-    return entry.state;
+    return { ...entry.state };
+  }
+
+  async consume(key: string, options: ConsumeOptions, ttlSeconds: number): Promise<BucketResult> {
+    const result = tryConsume(this.read(key) ?? createBucketState(options.maxTokens), options);
+    // No await between reading and updating: other requests cannot interleave.
+    this.data.set(key, {
+      state: { ...result.state },
+      expiresAt: Date.now() + ttlSeconds * 1000,
+    });
+    return result;
   }
 
   async set(key: string, state: BucketState, ttlSeconds: number): Promise<void> {
     this.data.set(key, {
-      state,
+      state: { ...state },
       expiresAt: Date.now() + ttlSeconds * 1000,
     });
   }
